@@ -1,5 +1,32 @@
 services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      - FLASK_SQLALCHEMY_DATABASE_URI=postgresql://postgres:postgres@postgres:5432/contact_db
+    ports:
+      - 5000:5000
+      - 8000:8000
+    depends_on:
+      - postgres
+    restart: always
+    networks:
+      - contact_app_net
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - 3000:3000
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - contact_app_net
+
   postgres:
+    hostname: postgres
+    container_name: postgres
     image: postgres:16-alpine
     environment:
       - POSTGRES_USER=postgres
@@ -7,3 +34,16 @@ services:
       - POSTGRES_DB=contact_db
     ports:
       - "5432:5432"
+    networks:
+      - contact_app_net
+    restart: always
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./backend/db.sql:/docker-entrypoint-initdb.d/init.sql
+
+networks:
+  contact_app_net:
+
+volumes:
+  db:
+    driver: local

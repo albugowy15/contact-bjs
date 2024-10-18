@@ -3,14 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.exceptions import HTTPException
 import json
 
+
 app = Flask(__name__)
-
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    "postgresql://postgres:postgres@localhost:5432/contact_db"
-)
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config.from_prefixed_env()
 db = SQLAlchemy(app)
-
 
 class Contact(db.Model):
     __tablename__ = "contacts"
