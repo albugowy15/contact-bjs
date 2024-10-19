@@ -2,6 +2,8 @@ import json
 
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from marshmallow.exceptions import ValidationError
+from sqlalchemy import select
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -12,6 +14,13 @@ from flask_jwt_extended import (
     get_jwt_identity,
 )
 from datetime import timedelta
+from schema.request import (
+    CreateContactRequestSchema,
+    LoginRequestSchema,
+    RegisterRequestSchema,
+    UpdateContactRequestSchema,
+)
+from schema.model import Contact, User
 
 app = Flask(__name__)
 app.config.from_prefixed_env()
@@ -21,25 +30,9 @@ CORS(app)
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
 
-class Contact(db.Model):
-    __tablename__ = "contacts"
-    id = db.Column(db.Integer, primary_key=True)
-    fullname = db.Column(db.String(255), nullable=False)
-    phone_number = db.Column(db.String(20), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-
-
-class User(db.Model):
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    fullname = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(100), nullable=False)
-    hashed_password = db.Column(db.String(255), nullable=False)
-
 
 @app.errorhandler(HTTPException)
 def handle_exception(e):
-    """Return JSON instead of HTML for HTTP errors."""
     response = e.get_response()
     response.data = json.dumps(
         {
@@ -52,14 +45,6 @@ def handle_exception(e):
     return response
 
 
-@app.route("/v1/protected", methods=["GET"])
-@jwt_required()  # This ensures the user has a valid JWT token
-def protected():
-    current_user = get_jwt_identity()  # Get the identity from the JWT token
-    return jsonify(logged_in_as=current_user), 200
-
-
-# Custom response for expired tokens
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_payload):
     return jsonify({"message": "The token has expired."}), 401
@@ -67,9 +52,17 @@ def expired_token_callback(jwt_header, jwt_payload):
 
 @app.post("/v1/register")
 def register():
-    data = request.json
-    password = data["password"]
-    existing_user = User.query.filter_by(email=data["email"]).first()
+    schema = RegisterRequestSchema()
+    data = request.get_json()
+    try:
+        schema.load(data)
+    except ValidationError as err:
+        return jsonify({"errors": err.messages}), 400
+
+    password = data.get("password")
+    existing_user = db.session.scalars(
+        select(User).filter_by(email=data["email"])
+    ).first()
     if existing_user:
         return jsonify(
             {"message": "This email has beed registered. Use another email"}
@@ -89,13 +82,16 @@ def register():
 
 @app.post("/v1/login")
 def login():
-    data = request.json
+    schema = LoginRequestSchema()
+    data = request.get_json()
+    try:
+        schema.load(data)
+    except ValidationError as err:
+        return jsonify({"errors": err.messages}), 400
     email = data["email"]
     password = data["password"]
 
-    # Find the user in the database by username
-    user = User.query.filter_by(email=email).first()
-
+    user = db.session.scalars(select(User).filter_by(email=email)).first()
     if user and check_password_hash(user.hashed_password, password):
         access_token = create_access_token(
             identity={"id": user.id, "email": user.email}
@@ -110,10 +106,12 @@ def login():
 def get_all_contacts():
     current_user = get_jwt_identity()
     current_user_id = current_user["id"]
-    user = User.query.get(current_user_id)
+    user = db.session.scalars(select(User).filter_by(id=current_user_id)).first()
     if not user:
         return jsonify({"message": "User not found"}), 404
-    contacts = Contact.query.filter_by(user_id=current_user_id).all()
+    contacts = db.session.scalars(
+        select(Contact).filter_by(user_id=current_user_id)
+    ).all()
     contact_list = []
     for contact in contacts:
         contact_list.append(
@@ -130,11 +128,18 @@ def get_all_contacts():
 @app.post("/v1/contacts")
 @jwt_required()
 def create_contact():
+    schema = CreateContactRequestSchema()
+    data = request.get_json()
+    try:
+        schema.load(data)
+    except ValidationError as err:
+        return jsonify({"errors": err.messages}), 400
+
     current_user = get_jwt_identity()
-    user = User.query.get(current_user["id"])
+    current_user_id = current_user["id"]
+    user = db.session.scalars(select(User).filter_by(id=current_user_id)).first()
     if not user:
         return jsonify({"message": "User not found"}), 404
-    data = request.json
     new_contact = Contact(
         fullname=data["fullname"],
         phone_number=data["phone_number"],
@@ -152,39 +157,40 @@ def create_contact():
 @app.put("/v1/contacts/<int:contact_id>")
 @jwt_required()
 def update_contact(contact_id):
-    current_user = get_jwt_identity()
-    user_id = current_user["id"]
+    schema = UpdateContactRequestSchema()
+    data = request.get_json()
+    try:
+        schema.load(data)
+    except ValidationError as err:
+        return jsonify({"errors": err.messages}), 400
 
-    contact = Contact.query.filter_by(id=contact_id, user_id=user_id).first()
+    current_user = get_jwt_identity()
+    current_user_id = current_user["id"]
+
+    contact = db.session.scalars(
+        select(Contact).filter_by(id=contact_id, user_id=current_user_id)
+    ).first()
     if not contact:
         return jsonify({"message": "Contact not found or you are not authorized"}), 404
-
-    data = request.json
 
     contact.fullname = data.get("fullname", contact.fullname)
     contact.phone_number = data.get("phone_number", contact.phone_number)
     db.session.commit()
 
-    return jsonify(
-        {
-            "data": {
-                "id": contact.id,
-                "fullname": contact.fullname,
-                "phone_number": contact.phone_number,
-            }
-        }
-    ), 200
+    return jsonify({"message": "Contact updated"}), 200
 
 
 @app.get("/v1/contacts/<int:contact_id>")
 @jwt_required()
 def get_contact(contact_id):
     current_user = get_jwt_identity()
-    user_id = current_user["id"]
-    user = User.query.get(user_id)
+    current_user_id = current_user["id"]
+    user = db.session.scalars(select(User).filter_by(id=current_user_id)).first()
     if not user:
         return jsonify({"message": "User not found"}), 404
-    contact = Contact.query.filter_by(id=contact_id, user_id=user_id).first()
+    contact = db.session.scalars(
+        select(Contact).filter_by(id=contact_id, user_id=current_user_id)
+    ).first()
     if not contact:
         return jsonify({"message": "Contact not found"}), 404
     return jsonify(
@@ -202,11 +208,13 @@ def get_contact(contact_id):
 @jwt_required()
 def delete_contact(contact_id):
     current_user = get_jwt_identity()
-    user_id = current_user["id"]
-    user = User.query.get(user_id)
+    current_user_id = current_user["id"]
+    user = db.session.scalars(select(User).filter_by(id=current_user_id)).first()
     if not user:
         return jsonify({"message": "User not found"}), 404
-    contact = Contact.query.filter_by(id=contact_id, user_id=user_id).first()
+    contact = db.session.scalars(
+        select(Contact).filter_by(id=contact_id, user_id=current_user_id)
+    ).first()
     if not contact:
         return jsonify({"message": "Contact not found"}), 404
     db.session.delete(contact)

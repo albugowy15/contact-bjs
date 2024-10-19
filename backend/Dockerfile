@@ -1,5 +1,5 @@
 # Use an official Python runtime as the base image
-FROM python:3.9-slim
+FROM python:3.12-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -28,7 +28,7 @@ RUN adduser --disabled-password --gecos '' appuser
 USER appuser
 
 # Expose the port the app runs on
-EXPOSE 8000
+EXPOSE 5000
 
 # Run the application with Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "main:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "main:app"]
