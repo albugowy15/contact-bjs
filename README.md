@@ -50,6 +50,7 @@ Before you begin, ensure you have the following installed on your system:
 To run the entire project using Docker Compose, execute the following command in the root directory of the project:
 
 ```sh
+cp ./frontend/.env.example ./frontend/.env
 docker-compose up
 ```
 

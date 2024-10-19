@@ -1,5 +1,7 @@
 services:
   backend:
+    hostname: backend
+    container_name: backend
     build:
       context: ./backend
     environment:
@@ -23,6 +25,10 @@ services:
     restart: always
     networks:
       - contact_app_net
+    env_file: ./frontend/.env
+    environment:
+      - NEXT_PUBLIC_BACKEND_API_URL=http://backend:8000
+      - NEXT_PUBLIC_BACKEND_API_URL_VERSION=v1
 
   postgres:
     hostname: postgres

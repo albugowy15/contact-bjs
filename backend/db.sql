@@ -1,9 +1,15 @@
-CREATE TABLE contacts (
-    id SERIAL PRIMARY KEY,
-    fullname VARCHAR(255) NOT NULL,
-    phone_number VARCHAR(20) NOT NULL,
-    email VARCHAR(100)
+CREATE TABLE "contacts" (
+  "id" serial PRIMARY KEY,
+  "fullname" varchar(255) NOT NULL,
+  "phone_number" varchar(30) NOT NULL,
+  "user_id" int
 );
 
--- Create an index on the phone_number column for faster lookups
-CREATE INDEX idx_contacts_phone_number ON contacts(phone_number);
+CREATE TABLE "users" (
+  "id" serial PRIMARY KEY,
+  "fullname" varchar(255) NOT NULL,
+  "email" varchar(100) UNIQUE NOT NULL,
+  "hashed_password" varchar(255) NOT NULL
+);
+
+ALTER TABLE "contacts" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
