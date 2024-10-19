@@ -40,8 +40,8 @@ Before you begin, ensure you have the following installed on your system:
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/yourusername/skill-test.git
-   cd skill-test`
+   git clone https://github.com/albugowy15/contact-bjs.git
+   cd contact-bjs`
    ```
 2. No additional installation steps are required as the project uses Docker.
 
