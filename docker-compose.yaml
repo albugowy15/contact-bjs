@@ -6,6 +6,7 @@ services:
       context: ./backend
     environment:
       - FLASK_SQLALCHEMY_DATABASE_URI=postgresql://postgres:postgres@postgres:5432/contact_db
+      - FLASK_JWT_SECRET_KEY="jwttokensecretkey"
     ports:
       - 5000:5000
       - 8000:8000
@@ -26,9 +27,9 @@ services:
     networks:
       - contact_app_net
     env_file: ./frontend/.env
-    environment:
-      - NEXT_PUBLIC_BACKEND_API_URL=http://backend:8000
-      - NEXT_PUBLIC_BACKEND_API_URL_VERSION=v1
+    # environment:
+    #   - NEXT_PUBLIC_BACKEND_API_URL=http://backend:8000
+    #   - NEXT_PUBLIC_BACKEND_API_URL_VERSION=v1
 
   postgres:
     hostname: postgres

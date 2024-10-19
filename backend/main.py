@@ -16,9 +16,10 @@ from datetime import timedelta
 app = Flask(__name__)
 app.config.from_prefixed_env()
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
+CORS(app)
+
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
-CORS(app, resources={r"/*": {"origins": "*"}})
 
 class Contact(db.Model):
     __tablename__ = "contacts"
