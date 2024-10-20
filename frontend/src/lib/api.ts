@@ -13,6 +13,7 @@ interface FetchOption {
 type BackendApiResponse<TData> = {
   data?: TData;
   message?: string;
+  errors: any;
 };
 
 interface AuthState {

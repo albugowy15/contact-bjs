@@ -2,7 +2,6 @@ import json
 
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from marshmallow.exceptions import ValidationError
 from sqlalchemy import select
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
@@ -19,30 +18,41 @@ from schema.request import (
     LoginRequestSchema,
     RegisterRequestSchema,
     UpdateContactRequestSchema,
+    validate_to_err_message,
 )
 from schema.model import Contact, User
+import logging
+import traceback
 
 app = Flask(__name__)
 app.config.from_prefixed_env()
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
 CORS(app)
-
+logging.basicConfig(level=logging.INFO)
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
 
 
 @app.errorhandler(HTTPException)
-def handle_exception(e):
-    response = e.get_response()
-    response.data = json.dumps(
-        {
-            "code": e.code,
-            "name": e.name,
-            "description": e.description,
-        }
-    )
-    response.content_type = "application/json"
-    return response
+def handle_http_exception(error):
+    app.logger.error(error)
+    response = {"message": error.description}
+    return jsonify(response), error.code
+
+
+@app.errorhandler(Exception)
+def handle_exception(error):
+    app.logger.error(error)
+    response = {
+        "message": "An unexpected error occurred",
+    }
+    return jsonify(response), 500
+
+
+@app.errorhandler(404)
+def handle_404_error(error):
+    app.logger.error(error)
+    return jsonify({"message": "Resource not found"}), 404
 
 
 @jwt.expired_token_loader
@@ -52,12 +62,13 @@ def expired_token_callback(jwt_header, jwt_payload):
 
 @app.post("/v1/register")
 def register():
-    schema = RegisterRequestSchema()
     data = request.get_json()
-    try:
-        schema.load(data)
-    except ValidationError as err:
-        return jsonify({"errors": err.messages}), 400
+
+    schema = RegisterRequestSchema()
+    errors = schema.validate(data)
+    if errors:
+        validate_to_err_message(errors)
+        return jsonify({"message": validate_to_err_message(errors)}), 400
 
     password = data.get("password")
     existing_user = db.session.scalars(
@@ -84,10 +95,11 @@ def register():
 def login():
     schema = LoginRequestSchema()
     data = request.get_json()
-    try:
-        schema.load(data)
-    except ValidationError as err:
-        return jsonify({"errors": err.messages}), 400
+    errors = schema.validate(data)
+    if errors:
+        validate_to_err_message(errors)
+        return jsonify({"message": validate_to_err_message(errors)}), 400
+
     email = data["email"]
     password = data["password"]
 
@@ -130,10 +142,10 @@ def get_all_contacts():
 def create_contact():
     schema = CreateContactRequestSchema()
     data = request.get_json()
-    try:
-        schema.load(data)
-    except ValidationError as err:
-        return jsonify({"errors": err.messages}), 400
+    errors = schema.validate(data)
+    if errors:
+        validate_to_err_message(errors)
+        return jsonify({"message": validate_to_err_message(errors)}), 400
 
     current_user = get_jwt_identity()
     current_user_id = current_user["id"]
@@ -159,10 +171,10 @@ def create_contact():
 def update_contact(contact_id):
     schema = UpdateContactRequestSchema()
     data = request.get_json()
-    try:
-        schema.load(data)
-    except ValidationError as err:
-        return jsonify({"errors": err.messages}), 400
+    errors = schema.validate(data)
+    if errors:
+        validate_to_err_message(errors)
+        return jsonify({"message": validate_to_err_message(errors)}), 400
 
     current_user = get_jwt_identity()
     current_user_id = current_user["id"]
