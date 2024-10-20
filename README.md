@@ -57,7 +57,7 @@ docker-compose up
 This command will build and start both the frontend and backend services.
 
 - The frontend will be available at: `http://localhost:3000`
-- The backend API will be accessible at: `http://localhost:8000`
+- The backend API will be accessible at: `http://localhost:5000`
 
 To stop the application, use:
 
