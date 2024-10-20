@@ -7,36 +7,6 @@
 	},
 	"item": [
 		{
-			"name": "Protected",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcyOTMyMTU1OSwianRpIjoiNTg4OTdmZDgtY2VjNS00YzU2LTg0YWQtZWE0OGM4OTJiMmRmIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJpZCI6MSwiZW1haWwiOiJraG9saWRAZ21haWwuY29tIn0sIm5iZiI6MTcyOTMyMTU1OSwiY3NyZiI6ImJkNzA4MTQ0LWQ1OWEtNDQ1Yi1iYzhiLWIyNTM1MTRhNmU3NSIsImV4cCI6MTcyOTQwNzk1OX0.P1tpXzrgDci0Wx6MWh--M1lf3djtBejPDYyq_0-4ZuM",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:5000/v1/protected",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "5000",
-					"path": [
-						"v1",
-						"protected"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Register user",
 			"request": {
 				"method": "POST",
@@ -67,6 +37,20 @@
 		},
 		{
 			"name": "Login user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var response = pm.response.json();",
+							"pm.collectionVariables.set(\"access_token\", response.data.access_token);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -102,7 +86,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcyOTMyMjU3MiwianRpIjoiZDc3NTM4NTctMTkxNS00NjlhLWE4MjEtMDc1MGJlYjZkYzY3IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJpZCI6MSwiZW1haWwiOiJraG9saWRAZ21haWwuY29tIn0sIm5iZiI6MTcyOTMyMjU3MiwiY3NyZiI6IjJjZDhiNjE3LTg3ZjItNDc4NC1hNTA3LTE4ZDA1MTAxOTliZCIsImV4cCI6MTcyOTQwODk3Mn0.cmmT7Hj82ehRvCs8B1m4ILgWKN1vyRpRYdcTVEio_Js",
+							"value": "{{access_token}}",
 							"type": "string"
 						}
 					]
@@ -111,7 +95,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"fullname\": \"Bughowi 2\",\n    \"phone_number\": \"06563522355\"\n}",
+					"raw": "{\n    \"fullname\": \"Ahmed salam\",\n    \"phone_number\": \"0895436758779\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -141,7 +125,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcyOTMyMjU3MiwianRpIjoiZDc3NTM4NTctMTkxNS00NjlhLWE4MjEtMDc1MGJlYjZkYzY3IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJpZCI6MSwiZW1haWwiOiJraG9saWRAZ21haWwuY29tIn0sIm5iZiI6MTcyOTMyMjU3MiwiY3NyZiI6IjJjZDhiNjE3LTg3ZjItNDc4NC1hNTA3LTE4ZDA1MTAxOTliZCIsImV4cCI6MTcyOTQwODk3Mn0.cmmT7Hj82ehRvCs8B1m4ILgWKN1vyRpRYdcTVEio_Js",
+							"value": "{{access_token}}",
 							"type": "string"
 						}
 					]
@@ -149,12 +133,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/v1/contacts",
+					"raw": "http://localhost:5000/v1/contacts",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
-					"port": "8000",
+					"port": "5000",
 					"path": [
 						"v1",
 						"contacts"
@@ -171,7 +155,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcyOTMyMjU3MiwianRpIjoiZDc3NTM4NTctMTkxNS00NjlhLWE4MjEtMDc1MGJlYjZkYzY3IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJpZCI6MSwiZW1haWwiOiJraG9saWRAZ21haWwuY29tIn0sIm5iZiI6MTcyOTMyMjU3MiwiY3NyZiI6IjJjZDhiNjE3LTg3ZjItNDc4NC1hNTA3LTE4ZDA1MTAxOTliZCIsImV4cCI6MTcyOTQwODk3Mn0.cmmT7Hj82ehRvCs8B1m4ILgWKN1vyRpRYdcTVEio_Js",
+							"value": "{{access_token}}",
 							"type": "string"
 						}
 					]
@@ -180,7 +164,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"fullname\": \"Bughowi edited\",\n    \"phone_number\": \"07777733377\"\n}",
+					"raw": "{\n    \"fullname\": \"Ahmed salam edited\",\n    \"phone_number\": \"0895436758779\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -188,16 +172,16 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8000/v1/contacts/2",
+					"raw": "http://localhost:5000/v1/contacts/1",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
-					"port": "8000",
+					"port": "5000",
 					"path": [
 						"v1",
 						"contacts",
-						"2"
+						"1"
 					]
 				}
 			},
@@ -211,7 +195,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcyOTMyMjU3MiwianRpIjoiZDc3NTM4NTctMTkxNS00NjlhLWE4MjEtMDc1MGJlYjZkYzY3IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJpZCI6MSwiZW1haWwiOiJraG9saWRAZ21haWwuY29tIn0sIm5iZiI6MTcyOTMyMjU3MiwiY3NyZiI6IjJjZDhiNjE3LTg3ZjItNDc4NC1hNTA3LTE4ZDA1MTAxOTliZCIsImV4cCI6MTcyOTQwODk3Mn0.cmmT7Hj82ehRvCs8B1m4ILgWKN1vyRpRYdcTVEio_Js",
+							"value": "{{access_token}}",
 							"type": "string"
 						}
 					]
@@ -228,16 +212,16 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8000/v1/contacts/3",
+					"raw": "http://localhost:5000/v1/contacts/1",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
-					"port": "8000",
+					"port": "5000",
 					"path": [
 						"v1",
 						"contacts",
-						"3"
+						"1"
 					]
 				}
 			},
@@ -254,7 +238,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcyOTMyMjU3MiwianRpIjoiZDc3NTM4NTctMTkxNS00NjlhLWE4MjEtMDc1MGJlYjZkYzY3IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJpZCI6MSwiZW1haWwiOiJraG9saWRAZ21haWwuY29tIn0sIm5iZiI6MTcyOTMyMjU3MiwiY3NyZiI6IjJjZDhiNjE3LTg3ZjItNDc4NC1hNTA3LTE4ZDA1MTAxOTliZCIsImV4cCI6MTcyOTQwODk3Mn0.cmmT7Hj82ehRvCs8B1m4ILgWKN1vyRpRYdcTVEio_Js",
+							"value": "{{access_token}}",
 							"type": "string"
 						}
 					]
@@ -271,20 +255,26 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8000/v1/contacts/2",
+					"raw": "http://localhost:5000/v1/contacts/1",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
-					"port": "8000",
+					"port": "5000",
 					"path": [
 						"v1",
 						"contacts",
-						"2"
+						"1"
 					]
 				}
 			},
 			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "access_token",
+			"value": ""
 		}
 	]
 }
